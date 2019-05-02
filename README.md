@@ -1,4 +1,4 @@
-![Improved Thermal unit](MLX90640.jpg)
+![Improved Thermal unit](mlx90640.jpg)
 
 # M5Stack-Thermal-MLX90640
 Improved version of Thermal unit:
@@ -23,6 +23,6 @@ BtnC adjusts MAX temp:
 BtnB:
 * short press sets MIN/MAX temp to current min/max
 * long press invokes menu:
-* * BtnA - toggle temperature grid
-* * BtnB - toggle auto scale
-* * BtnC - Power Off
+** BtnA - toggle temperature grid
+** BtnB - toggle auto scale
+** BtnC - Power Off

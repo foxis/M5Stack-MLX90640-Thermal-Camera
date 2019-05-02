@@ -345,7 +345,7 @@ void displayrunning() {
 	M5.Lcd.fillRect(x, h / 2 - 8, w, 16, TFT_BLACK); // clear spot temp text
   M5.Lcd.setTextColor(TFT_WHITE);
 
-  if (max_v > max_cam_v | max_v < min_cam_v ) {
+  if (max_v > max_cam_v || max_v < min_cam_v ) {
 		M5.Lcd.setCursor(x, h / 2 - 8);      // update min & max temp
     M5.Lcd.setTextColor(TFT_RED);
     M5.Lcd.printf("Error", 1);
@@ -364,11 +364,12 @@ void displayrunning() {
   endTime = loopTime;
   fps = 1000 / (endTime - startTime);
   //M5.Lcd.fillRect(310, 209, 10, 12, TFT_BLACK); //Clear fps text area
-  M5.Lcd.fillRect(x, h+3, w, 12, TFT_BLACK); //Clear fps text area
+  M5.Lcd.fillRect(x, h, w, M5.Lcd.height()-h, TFT_BLACK); //Clear fps text area
   M5.Lcd.setTextSize(1);
-  M5.Lcd.setCursor(x+32, h+3);
+	M5.Lcd.setCursor(x+32, h+1);
   M5.Lcd.print("fps:" + String( fps ));
-  M5.Lcd.setTextSize(1);
+	M5.Lcd.setCursor(x+32, h+9);
+  M5.Lcd.print("bat:" + String( M5.Power.getBatteryLevel() ));
 }
 
 void drawpixels(float *p, uint8_t rows, uint8_t cols, float boxWidth, float boxHeight) {

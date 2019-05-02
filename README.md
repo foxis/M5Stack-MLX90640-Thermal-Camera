@@ -5,6 +5,7 @@ Improved version of Thermal unit:
 
 * Flickerless display (using Sprite)
 * Rearranged UI
+* Battery level
 * Autoscale temperatures (can be toggled on/off)
 * interpolate to 56x56 (capable of 112x112, but with 1fps)
 * averaged 4x4 spot temperature

@@ -133,6 +133,12 @@ void setup()
   {
     M5.Lcd.drawFastHLine(img.width()+1, img.height() - img.height() * (icol / 255.0), 15, camColors[icol]);
   }
+
+	if (autoscale_temp) {
+		MINTEMP = max_cam_v;
+		MAXTEMP = min_cam_v;
+	}
+
   infodisplay();
 }
 
@@ -262,8 +268,10 @@ void loop()
 	}
 
 	if (autoscale_temp) {
-		MINTEMP = min_v - 1;
-		MAXTEMP = max_v + 1;
+		if (abs(min_v - MINTEMP) > 1)
+			MINTEMP = min_v - 1;
+		if (abs(max_v - MAXTEMP) > 1)
+			MAXTEMP = max_v + 1;
 	}
 
   interpolate_image(pixels, ROWS, COLS, dest_2d, INTERPOLATED_ROWS, INTERPOLATED_COLS);
@@ -300,7 +308,7 @@ void MLX90640_init() {
   // 0x05 – 16Hz // OK
   // 0x06 – 32Hz // Fail
   // 0x07 – 64Hz
-  SetRefreshRate = MLX90640_SetRefreshRate (MLX90640_address, 0x05);
+  SetRefreshRate = MLX90640_SetRefreshRate (MLX90640_address, 0x04);
   //Once params are extracted, we can release eeMLX90640 array
 }
 

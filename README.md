@@ -23,6 +23,6 @@ BtnC adjusts MAX temp:
 BtnB:
 * short press sets MIN/MAX temp to current min/max
 * long press invokes menu:
-** BtnA - toggle temperature grid
-** BtnB - toggle auto scale
-** BtnC - Power Off
+  * BtnA - toggle temperature grid
+  * BtnB - toggle auto scale
+  * BtnC - Power Off

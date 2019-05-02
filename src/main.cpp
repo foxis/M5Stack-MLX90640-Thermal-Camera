@@ -50,6 +50,9 @@ bool reverseScreen = true;
 bool display_grid = false;
 bool autoscale_temp = true;
 bool menu = false;
+bool menu_emissivity = false;
+float emissivity;
+int emissivity_index = 23;
 
 paramsMLX90640 mlx90640;
 
@@ -102,7 +105,133 @@ const uint16_t camColors[] = {0x480F,
                               0xF080, 0xF060, 0xF040, 0xF020, 0xF800,
                              };
 
-
+#define EMISSIVITY_SIZE (sizeof(emissivity_table) / sizeof(emissivity_table[0]))
+struct emissivity_struct {
+	char * name;
+	float value;
+} emissivity_table[] = {
+	{"Aluminium: anodised",	0.77},
+	{"Aluminium: polished",	0.05},
+	{"Asbestos: board",	0.96},
+	{"Asbestos: fabric",	0.78},
+	{"Asbestos: paper",	0.93},
+	{"Asbestos: slate",	0.96},
+	{"Brass: highly polished",	0.03},
+	{"Brass: oxidized",	0.61},
+	{"Brick: common",	(.81+.86)/2.0},
+	{"Brick: common, red",	0.93},
+	{"Brick: facing, red",	0.92},
+	{"Brick: fireclay",	0.75},
+	{"Brick: masonry",	0.94},
+	{"Brick: red",	0.90},
+	{"Carbon: candle soot",	0.95},
+	{"Carbon: graphite",	0.98},
+	{"Carbon: purified",	0.80},
+	{"Cement:",	0.54},
+	{"Charcoal: powder",	0.96},
+	{"Chipboard: untreated",	0.90},
+	{"Chromium: polished",	0.10},
+	{"Clay: fired",	0.91},
+	{"Concrete",	0.92},
+	{"Concrete: dry",	0.95},
+	{"Concrete: rough",	.92-.97},
+	{"Copper: polished",	0.05},
+	{"Copper: oxidized",	0.65},
+	{"Enamel: lacquer",	0.90},
+	{"Fabric: green",	0.88},
+	{"Fabric: uncoloured",	0.87},
+	{"Fibreglass",	0.75},
+	{"Fibre brd: porous",	0.85},
+	{"Fibre brd: hard",	0.85},
+	{"Filler: white",	0.88},
+	{"Firebrick",	0.68},
+	{"Formica",	0.94},
+	{"Galvanized Pipe",	0.46},
+	{"Glass",	0.92},
+	{"Glass: semitransparent",	0.97},
+	{"Glass: frosted",	0.96},
+	{"Glass: frosted",	0.70},
+	{"Glass: polished plate",	0.94},
+	{"Granite: natural surface",	0.96},
+	{"Graphite: powder",	0.97},
+	{"Gravel",	0.28},
+	{"Gypsum",	0.08},
+	{"Hardwood: across grain",	0.82},
+	{"Hardwood: along grain",	(.68+.73)/2.0},
+	{"Ice",	0.97},
+	{"Iron: heavily rusted",	(.91-.96)/2.0},
+	{"Lacquer: bakelite",	0.93},
+	{"Lacquer: dull black",	0.97},
+	{"Lampblack",	0.96},
+	{"Limestone: natural surface",	0.96},
+	{"Mortar",	0.87},
+	{"Mortar: dry",	0.94},
+	{"P.V.C.",	.91-.93},
+	{"Paint: 9560 series",	1.00},
+	{"Paint: aluminium",	0.45},
+	{"Paint, oil: average",	0.94},
+	{"Paint: oil, black, gloss",	0.92},
+	{"Paint: oil, grey, flat",	0.97},
+	{"Paint: plastic, black",	0.95},
+	{"Paint: plastic, white",	0.84},
+	{"Paper: black",	0.90},
+	{"Paper: black, dull",	0.94},
+	{"Paper: cardboard",	0.81},
+	{"Paper: green",	0.85},
+	{"Paper: red",	0.76},
+	{"Paper: white",	0.68},
+	{"Paper: white bond",	0.93},
+	{"Paper: yellow",	0.72},
+	{"Paper: tar",	0.92},
+	{"Pipes: glazed",	0.83},
+	{"Plaster",	(.86+.90)/2.0},
+	{"Plaster: rough coat",	0.91},
+	{"Plasterboard",	0.90},
+	{"Plastic: acrylic",	0.94},
+	{"Plastic: black",	0.95},
+	{"Plastic: white",	0.84},
+	{"Plastic paper: red",	0.94},
+	{"Plastic paper: white",	0.84},
+	{"Plexiglass: Perpex",	0.86},
+	{"Plywood",	(.83+.98)/2.0},
+	{"Plywood: dry",	0.82},
+	{"Plywood: untreated",	0.83},
+	{"Polypropylene",	0.97},
+	{"Porcelain: glazed",	0.92},
+	{"Quartz",	0.93},
+	{"Redwood: wrought",	0.83},
+	{"Redwood: unwrought",	0.84},
+	{"Rubber",	0.95},
+	{"Rubber: black",	0.97},
+	{"Sand",	0.90},
+	{"Skin, human",	0.98},
+	{"Snow",	0.80},
+	{"Soil: dry",	0.92},
+	{"Soil: frozen",	0.93},
+	{"Soil: w/water",	0.95},
+	{"Stainless Steel",	0.59},
+	{"Stainless Plate",	0.34},
+	{"Steel: galvanized",	0.28},
+	{"Steel: rolled freshly",	0.24},
+	{"Styrofoam: insulation",	0.60},
+	{"Tape: electrical",	0.97},
+	{"Tape: masking",	0.92},
+	{"Tile: asbestos",	0.94},
+	{"Tile: glazed",	0.94},
+	{"Tin: burnished",	0.05},
+	{"Tin: sheet iron",	0.06},
+	{"Varnish: flat",	0.93},
+	{"Wallpaper: light grey",	0.85},
+	{"Wallpaper: red",	0.90},
+	{"Water:",	0.95},
+	{"Water: distilled",	0.95},
+	{"Water: ice, smooth",	0.96},
+	{"Water: frost crystals",	0.98},
+	{"Water: snow",	0.85},
+	{"Wood: planed",	0.90},
+	{"Wood: panelling",	0.87},
+	{"Wood: dry",	0.86},
+};
 
 float get_point(float *p, uint8_t rows, uint8_t cols, int8_t x, int8_t y);
 void interpolate_image(float *src, uint8_t src_rows, uint8_t src_cols, float *dest, uint8_t dest_rows, uint8_t dest_cols);
@@ -139,6 +268,8 @@ void setup()
 		MAXTEMP = min_cam_v;
 	}
 
+	emissivity = emissivity_table[emissivity_index].value;
+
   infodisplay();
 }
 
@@ -162,8 +293,13 @@ void loop()
 		if (!menu)
 			MINTEMP = max(min_cam_v, MINTEMP - 1);
 		else {
-			display_grid = !display_grid;
-			menu = false;
+			if (menu_emissivity) {
+				if (emissivity_index > 0)
+					emissivity_index --;
+			} else {
+				display_grid = !display_grid;
+				menu = false;
+			}
 		}
 		infodisplay();
   }
@@ -176,7 +312,11 @@ void loop()
     	MINTEMP = min_v - 1;
     	MAXTEMP = max_v + 1;
 		} else {
-			autoscale_temp = !autoscale_temp;
+			if (!menu_emissivity)
+				autoscale_temp = !autoscale_temp;
+			else {
+				emissivity = emissivity_table[emissivity_index].value;
+			}
 			menu = false;
 		}
 		infodisplay();
@@ -186,14 +326,25 @@ void loop()
   // Power Off  //
   ////////////////
   if (M5.BtnB.pressedFor(1000)) {
+		if (menu) {
+			menu_emissivity = true;
+		} else
 		menu = true;
 		infodisplay();
+		delay(1000);
   }
 
   ///////////////////////////////
   // Set Max Value - LongPress //
   ///////////////////////////////
   if (M5.BtnC.pressedFor(1000)) {
+		if (menu) {
+			M5.Lcd.fillScreen(TFT_BLACK);
+	    M5.Lcd.setTextColor(YELLOW, BLACK);
+	    M5.Lcd.drawCentreString("Power Off...", 160, 80, 4);
+	    delay(1000);
+	    M5.powerOFF();
+		}
 		MAXTEMP = min(max_cam_v, MAXTEMP + 5);
 		infodisplay();
   }
@@ -205,84 +356,84 @@ void loop()
 		if (!menu)
 			MAXTEMP = min(max_cam_v, MAXTEMP + 1);
 		else {
-			M5.Lcd.fillScreen(TFT_BLACK);
-	    M5.Lcd.setTextColor(YELLOW, BLACK);
-	    M5.Lcd.drawCentreString("Power Off...", 160, 80, 4);
-	    delay(1000);
-	    M5.powerOFF();
+			if (menu_emissivity) {
+				if (emissivity_index < EMISSIVITY_SIZE - 1)
+					emissivity_index ++;
+			}
 		}
 		infodisplay();
   }
 
   M5.update();
 
-  for (byte x = 0 ; x < speed_setting ; x++) // x < 2 Read both subpages
-  {
-    uint16_t mlx90640Frame[834];
-    int status = MLX90640_GetFrameData(MLX90640_address, mlx90640Frame);
-    if (status < 0)
-    {
-    }
+	if (!menu) {
+	  for (byte x = 0 ; x < speed_setting ; x++) // x < 2 Read both subpages
+	  {
+	    uint16_t mlx90640Frame[834];
+	    int status = MLX90640_GetFrameData(MLX90640_address, mlx90640Frame);
+	    if (status < 0)
+	    {
+	    }
 
-    float vdd = MLX90640_GetVdd(mlx90640Frame, &mlx90640);
-    float Ta = MLX90640_GetTa(mlx90640Frame, &mlx90640);
-    float tr = Ta - TA_SHIFT; //Reflected temperature based on the sensor ambient temperature
-    float emissivity = 0.95;
-    MLX90640_CalculateTo(mlx90640Frame, &mlx90640, emissivity, tr, pixels); //save pixels temp to array (pixels)
-  }
+	    float vdd = MLX90640_GetVdd(mlx90640Frame, &mlx90640);
+	    float Ta = MLX90640_GetTa(mlx90640Frame, &mlx90640);
+	    float tr = Ta - TA_SHIFT; //Reflected temperature based on the sensor ambient temperature
+	    MLX90640_CalculateTo(mlx90640Frame, &mlx90640, emissivity, tr, pixels); //save pixels temp to array (pixels)
+	  }
 
-  //Reverse image
-  if (reverseScreen == 1)
-  {
-    for (int y = 0 ; y < ROWS ; y++)
-    {
-			float * p = pixels + y * COLS;
-      for (int x = 0; x < COLS / 2; x++)
-      {
-				float tmp;
-				tmp = p[x];
-				p[x] = p[COLS - x - 1];
-				p[COLS - x - 1] = tmp;
-			}
-    }
-  }
+	  //Reverse image
+	  if (reverseScreen == 1)
+	  {
+	    for (int y = 0 ; y < ROWS ; y++)
+	    {
+				float * p = pixels + y * COLS;
+	      for (int x = 0; x < COLS / 2; x++)
+	      {
+					float tmp;
+					tmp = p[x];
+					p[x] = p[COLS - x - 1];
+					p[COLS - x - 1] = tmp;
+				}
+	    }
+	  }
 
-	if (autoscale_temp) {
-		max_v = min_cam_v;
-	  min_v = max_cam_v;
-	} else {
-		max_v = MINTEMP;
-	  min_v = MAXTEMP;
+		if (autoscale_temp) {
+			max_v = min_cam_v;
+		  min_v = max_cam_v;
+		} else {
+			max_v = MINTEMP;
+		  min_v = MAXTEMP;
+		}
+	  spot_v = pixels[COLS / 2 - 1 + COLS * (ROWS / 2 - 1)];
+		spot_v += pixels[COLS / 2 - 1 + COLS * ROWS / 2];
+		spot_v += pixels[COLS / 2 + COLS * (ROWS / 2 - 1)];
+		spot_v += pixels[COLS / 2 + COLS * ROWS / 2];
+		spot_v /= 4.0f;
+
+		float * p = pixels;
+		for ( int y = 0; y < ROWS * COLS; y++ ) {
+			max_v = max(max_v, *p);
+			min_v = min(min_v, *p);
+			++p;
+		}
+
+		if (autoscale_temp) {
+			if (abs(min_v - MINTEMP) > 1)
+				MINTEMP = min_v - 1;
+			if (abs(max_v - MAXTEMP) > 1)
+				MAXTEMP = max_v + 1;
+		}
+
+	  interpolate_image(pixels, ROWS, COLS, dest_2d, INTERPOLATED_ROWS, INTERPOLATED_COLS);
+		drawpixels(dest_2d, INTERPOLATED_ROWS, INTERPOLATED_COLS, img.width() / INTERPOLATED_COLS, img.height() / INTERPOLATED_ROWS);
+		drawgrid(pixels, ROWS, COLS, img.width() / (float)COLS, img.height() / (float)ROWS);
+
+		img.pushSprite(0, 0);
+
+		if (autoscale_temp)
+			infodisplay();
+		displayrunning();
 	}
-  spot_v = pixels[COLS / 2 - 1 + COLS * (ROWS / 2 - 1)];
-	spot_v += pixels[COLS / 2 - 1 + COLS * ROWS / 2];
-	spot_v += pixels[COLS / 2 + COLS * (ROWS / 2 - 1)];
-	spot_v += pixels[COLS / 2 + COLS * ROWS / 2];
-	spot_v /= 4.0f;
-
-	float * p = pixels;
-	for ( int y = 0; y < ROWS * COLS; y++ ) {
-		max_v = max(max_v, *p);
-		min_v = min(min_v, *p);
-		++p;
-	}
-
-	if (autoscale_temp) {
-		if (abs(min_v - MINTEMP) > 1)
-			MINTEMP = min_v - 1;
-		if (abs(max_v - MAXTEMP) > 1)
-			MAXTEMP = max_v + 1;
-	}
-
-  interpolate_image(pixels, ROWS, COLS, dest_2d, INTERPOLATED_ROWS, INTERPOLATED_COLS);
-	drawpixels(dest_2d, INTERPOLATED_ROWS, INTERPOLATED_COLS, img.width() / INTERPOLATED_COLS, img.height() / INTERPOLATED_ROWS);
-	drawgrid(pixels, ROWS, COLS, img.width() / (float)COLS, img.height() / (float)ROWS);
-
-	img.pushSprite(0, 0);
-
-	displayrunning();
-	if (autoscale_temp)
-		infodisplay();
 }
 
 /*** ***/
@@ -325,12 +476,21 @@ void infodisplay(void) {
   M5.Lcd.fillRect(x, h - 16, w, 16, TFT_BLACK);
   M5.Lcd.print(MINTEMP , 1);
 	M5.Lcd.setTextSize(1);
-	M5.Lcd.fillRect(0, h, img.width(), M5.Lcd.height()-h, TFT_BLACK); //Clear MaxTemp area
 	M5.Lcd.setCursor(0, h+3);
+	M5.Lcd.fillRect(0, h, M5.Lcd.width(), M5.Lcd.height()-h, TFT_BLACK); //Clear menu area
 	if (!menu) {
 		M5.Lcd.print("     Min adj          Settings       Max adj");
 	} else {
-		M5.Lcd.print("     grid         auto scale      Power off");
+		if (!menu_emissivity)
+			M5.Lcd.print("     grid         auto scale      Power off");
+		else {
+			M5.Lcd.setCursor(32, h+3);
+			M5.Lcd.print("<");
+			M5.Lcd.setCursor(img.width(), h+3);
+			M5.Lcd.print(">");
+			M5.Lcd.setCursor(64, h+3);
+			M5.Lcd.print(emissivity_table[emissivity_index].name);
+		}
 	}
 }
 
@@ -340,8 +500,6 @@ void displayrunning() {
 	const int w = M5.Lcd.width() - img.width() + 16;
 
 	M5.Lcd.setTextSize(2);
-  M5.Lcd.fillRect(x, 16, w, 16, TFT_BLACK);  // clear max temp text
-	M5.Lcd.fillRect(x, h - 32, w, 16, TFT_BLACK); // clear spot temp text
 	M5.Lcd.fillRect(x, h / 2 - 8, w, 16, TFT_BLACK); // clear spot temp text
   M5.Lcd.setTextColor(TFT_WHITE);
 
@@ -352,9 +510,12 @@ void displayrunning() {
   }
   else
   {
-		M5.Lcd.setCursor(x, h - 32);      // update min & max temp
+		M5.Lcd.fillRect(x, h - 32, w, 16, TFT_BLACK); // clear min temp text
+		M5.Lcd.setCursor(x, h - 32);      // update min temp
     M5.Lcd.print(min_v, 1);
-		M5.Lcd.setCursor(x, 16);      // update min & max temp
+
+		M5.Lcd.fillRect(x, 16, w, 16, TFT_BLACK);  // clear max temp text
+		M5.Lcd.setCursor(x, 16);      // update max temp
     M5.Lcd.print(max_v, 1);
 
 		M5.Lcd.setCursor(x, h / 2 - 8);      // update min & max temp

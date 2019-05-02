@@ -6,6 +6,7 @@ Improved version of Thermal unit:
 * Flickerless display (using Sprite)
 * Rearranged UI
 * Battery level
+* Emissivity table
 * Autoscale temperatures (can be toggled on/off)
 * interpolate to 56x56 (capable of 112x112, but with 1fps)
 * averaged 4x4 spot temperature
@@ -27,3 +28,8 @@ BtnB:
   * BtnA - toggle temperature grid
   * BtnB - toggle auto scale
   * BtnC - Power Off
+* twice long press invokes emissivity menu
+
+Note:
+* long press ~1s
+* twice long press ~2s

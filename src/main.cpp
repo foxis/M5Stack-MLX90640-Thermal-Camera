@@ -245,6 +245,9 @@ void displayrunning();
 void setup()
 {
   M5.begin();
+	WiFi.mode(WIFI_OFF);
+	btStop();
+
   Wire.begin();
   Wire.setClock(400000); //Increase I2C clock speed to 400kHz
 

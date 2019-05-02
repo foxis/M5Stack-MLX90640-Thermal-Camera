@@ -412,9 +412,9 @@ void drawgrid(float *p, uint8_t rows, uint8_t cols, float boxWidth, float boxHei
 	else {
 		int x = img.width() / 2;
 		int y = img.height() / 2;
-		img.drawCircle(x, y, 6, TFT_WHITE);     // update center spot icon
-    img.drawFastHLine(x-3, y, 6, TFT_WHITE); // vertical line
-    img.drawFastVLine(x, y-3, 6, TFT_WHITE); // horizontal line
+		img.drawCircle(x, y, boxWidth, TFT_WHITE);     // update center spot icon
+    img.drawFastHLine(x-boxWidth, y, 2 * boxWidth, TFT_WHITE); // vertical line
+    img.drawFastVLine(x, y-boxWidth, 2 * boxWidth, TFT_WHITE); // horizontal line
 	}
 }
 
